@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto Antítese</title>
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --accent: #e74c3c; 
+            --success: #2ecc71; 
+            --bg: #f4f4f9; 
+            --text-scale: 1; /* Variável base para escala de fonte */
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; }
+        
+        .sidebar { width: 80px; background: var(--primary); display: flex; flex-direction: column; align-items: center; padding-top: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .nav-btn { background: none; border: none; color: white; font-size: calc(24px * var(--text-scale)); margin-bottom: 30px; cursor: pointer; opacity: 0.6; transition: 0.3s; position: relative; }
+        .nav-btn:hover, .nav-btn.active { opacity: 1; transform: scale(1.1); }
+        .nav-btn.active::after { content: ''; position: absolute; right: -22px; top: 50%; transform: translateY(-50%); border-left: 10px solid transparent; border-right: 10px solid var(--bg); border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
+
+        .content { flex: 1; padding: 30px; overflow-y: auto; display: none; }
+        .content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hud-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--accent); }
+        .score-bar-container { width: 100%; height: 24px; background: #ecf0f1; border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin-top: 5px; }
+        .score-bar { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, #f1c40f 50%, var(--success) 100%); width: 50%; transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
+        .score-marker { position: absolute; top: 0; bottom: 0; width: 2px; background: #000; opacity: 0.3; left: 50%; z-index: 2; }
+        .feedback-box { font-size: calc(15px * var(--text-scale)); font-weight: 600; color: #555; margin-top: 5px; min-height: 20px; }
+
+        .chat-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; height: 60vh; border: 1px solid #e0e0e0; }
+        .chat-box { flex: 1; padding: 25px; overflow-y: scroll; display: flex; flex-direction: column; gap: 15px; background: #fafafa; }
+        
+        .msg { max-width: 75%; padding: 12px 18px; border-radius: 18px; font-size: calc(15px * var(--text-scale)); line-height: 1.5; position: relative; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .msg.ia { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .msg.ia::before { content: '🤖 Antítese'; position: absolute; top: -20px; left: 5px; font-size: calc(11px * var(--text-scale)); color: #999; font-weight: bold; }
+        
+        .msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.2); }
+        
+        .msg.sys { align-self: center; background: #e0e0e0; color: #555; font-size: calc(12px * var(--text-scale)); padding: 5px 15px; border-radius: 20px; margin: 10px 0; font-style: italic; }
+
+        .input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
+        input[type="text"] { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 8px; font-size: calc(16px * var(--text-scale)); transition: 0.3s; outline: none; }
+        input[type="text"]:focus { border-color: var(--primary); }
+        button { padding: 0 25px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: calc(16px * var(--text-scale)); transition: 0.2s; }
+        button:hover { background: #34495e; transform: translateY(-2px); }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        .setup-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; text-align: center; }
+        .setup-input { width: 80%; padding: 15px; font-size: calc(18px * var(--text-scale)); border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; outline: none; text-align: center; }
+        .setup-input:focus { border-color: var(--accent); }
+        
+        .topic-chips { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; }
+        .chip { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: calc(13px * var(--text-scale)); cursor: pointer; transition: 0.2s; color: #555; }
+        .chip:hover { background: #ddd; color: black; }
+
+        .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .history-table th { background: #f8f9fa; padding: 12px; text-align: left; color: #666; font-weight: 600; border-bottom: 2px solid #eee; font-size: calc(16px * var(--text-scale)); }
+        .history-table td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: calc(14px * var(--text-scale)); }
+        .history-table tr:hover { background: #f9f9f9; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: calc(11px * var(--text-scale)); font-weight: bold; text-transform: uppercase; }
+        .badge-win { background: #d4edda; color: #155724; }
+        .badge-loss { background: #f8d7da; color: #721c24; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <button class="nav-btn active" onclick="showTab('tab-home')" title="Debate">🏠</button>
+        <button class="nav-btn" onclick="showTab('tab-history')" title="Histórico">📜</button>
+        <button class="nav-btn" onclick="showTab('tab-config')" title="Configurações">⚙️</button>
+    </div>
+
+    <div id="tab-home" class="content active">
+        <h2 style="color: var(--primary); margin-top: 0; font-size: calc(24px * var(--text-scale));">🔥 Área de Debate</h2>
+        
+        <div id="hud-area" class="hud-panel" style="display: none;">
+            <div style="flex: 1;">
+                <small style="text-transform: uppercase; letter-spacing: 1px; color: #999; font-size: calc(10px * var(--text-scale));">Análise do Juiz</small>
+                <div id="txt-feedback" class="feedback-box">Aguardando início...</div>
+            </div>
+            <div style="text-align: right; width: 40%; padding-left: 20px;">
+                <div style="display: flex; justify-content: space-between; font-size: calc(12px * var(--text-scale)); margin-bottom: 2px; font-weight: bold;">
+                    <span>IA (Mentira)</span>
+                    <span id="score-val">50 pts</span>
+                    <span>VOCÊ (Verdade)</span>
+                </div>
+                <div class="score-bar-container">
+                    <div class="score-marker"></div>
+                    <div id="score-bar" class="score-bar" style="width: 50%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="setup-area" class="setup-card">
+            <h1 style="color: var(--primary); font-size: calc(32px * var(--text-scale));">Desafie a IA</h1>
+            <p style="color: #666; font-size: calc(16px * var(--text-scale));">Escolha qualquer assunto. A IA vai "pesquisar" e criar uma tese falsa para você derrubar.</p>
+            
+            <input type="text" id="tema-input" class="setup-input" placeholder="Ex: Aquecimento Global, Vacinas, Idade Média..." onkeypress="handleSetupEnter(event)">
+            
+            <div class="topic-chips">
+                <div class="chip" onclick="setTema('A Terra é Plana')">🌍 Terra Plana</div>
+                <div class="chip" onclick="setTema('Aquecimento Global é mito')">☀️ Aquecimento Global</div>
+                <div class="chip" onclick="setTema('Vacinas são perigosas')">💉 Vacinas</div>
+                <div class="chip" onclick="setTema('O pouso na Lua foi fake')">🚀 Pouso na Lua</div>
+            </div>
+
+            <button onclick="iniciarDebate()" id="btn-start" style="width: 200px; padding: 15px;">INICIAR DEBATE</button>
+        </div>
+
+        <div id="debate-area" style="display: none;">
+            <div class="chat-container">
+                <div id="chat-box" class="chat-box"></div>
+                <div class="input-area">
+                    <input type="text" id="user-input" placeholder="Digite sua refutação..." onkeypress="handleChatEnter(event)">
+                    <button id="btn-send" onclick="enviarMensagem()">Enviar</button>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <button onclick="encerrarDebate()" style="background: #e74c3c; padding: 10px 20px; font-size: calc(14px * var(--text-scale));">Encerrar / Novo Tema</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-history" class="content">
+        <h2 style="font-size: calc(24px * var(--text-scale));">📜 Histórico de Debates</h2>
+        <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                <button onclick="carregarHistorico()" style="font-size: calc(14px * var(--text-scale)); padding: 8px 15px;">🔄 Atualizar</button>
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tema</th>
+                        <th>Pontuação</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tab-config" class="content">
+        <h2 style="font-size: calc(24px * var(--text-scale));">⚙️ Configurações</h2>
+        
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin-bottom: 20px;">
+            <label style="font-weight: bold; color: var(--primary); font-size: calc(16px * var(--text-scale));">Google Gemini API Key:</label>
+            <p style="font-size: calc(13px * var(--text-scale)); color: #777; margin: 5px 0 15px;">Necessária para ativar o cérebro da IA.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="password" id="api-key-input" style="flex: 1;" placeholder="Cole sua chave AIzaSy...">
+                <button onclick="salvarKey()">Salvar</button>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: calc(13px * var(--text-scale)); color: #0d47a1;">
+                <strong>Como funciona:</strong><br>
+                1. A IA usa sua chave para gerar respostas.<br>
+                2. A chave é salva apenas na sessão do navegador.<br>
+                3. Obtenha a chave em <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px;">
+            <label style="font-weight: bold; color: var(--primary); font-size: calc(16px * var(--text-scale));">Acessibilidade:</label>
+            <p style="font-size: calc(13px * var(--text-scale)); color: #777; margin: 5px 0 15px;">Ajuste o tamanho do texto para melhor leitura.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <button onclick="mudarFonte(0.85)" style="flex: 1; background: #95a5a6; font-size: 14px;">A-</button>
+                <button onclick="mudarFonte(1)" style="flex: 1; background: var(--primary); font-size: 18px;">A</button>
+                <button onclick="mudarFonte(1.25)" style="flex: 1; background: var(--primary); font-size: 22px;">A+</button>
+            </div>
+            <p style="font-size: calc(12px * var(--text-scale)); text-align: center; color: #999;">Tamanho atual: <span id="font-display">Normal</span></p>
+        </div>
+
+    </div>
+
+    <script>
+        function exibirPopup(mensagem, tipo) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;";
+                document.body.appendChild(container);
+            }
+
+            const isSuccess = tipo === 'sucesso';
+            const corBorda = isSuccess ? 'var(--success)' : 'var(--accent)';
+            const icone = isSuccess ? '✅' : '⚠️';
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: white; 
+                padding: 15px 20px; 
+                border-radius: 8px; 
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+                border-left: 6px solid ${corBorda}; 
+                font-family: 'Segoe UI', sans-serif;
+                font-size: calc(14px * var(--text-scale));
+                display: flex; 
+                align-items: center; 
+                gap: 12px; 
+                opacity: 0; 
+                transform: translateX(50px); 
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                min-width: 250px;
+            `;
+            
+            toast.innerHTML = `<span style="font-size: 1.2em;">${icone}</span> <span style="color: #333; font-weight: 600;">${mensagem}</span>`;
+            
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.style.opacity = '1';
+                toast.style.transform = 'translateX(0)';
+            });
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(50px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        function mudarFonte(escala) {
+            document.documentElement.style.setProperty('--text-scale', escala);
+            localStorage.setItem('antitese_font_scale', escala);
+            
+            let label = "Normal";
+            if(escala < 1) label = "Pequeno";
+            if(escala > 1) label = "Grande";
+            document.getElementById('font-display').innerText = label;
+        }
+
+        window.onload = function() {
+            const savedScale = localStorage.getItem('antitese_font_scale');
+            if (savedScale) {
+                mudarFonte(parseFloat(savedScale));
+            }
+        };
+
+        function showTab(tabId) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            
+            const btnIndex = tabId === 'tab-home' ? 0 : tabId === 'tab-history' ? 1 : 2;
+            document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+
+            if(tabId === 'tab-history') carregarHistorico();
+        }
+
+        function setTema(texto) {
+            document.getElementById('tema-input').value = texto;
+        }
+
+        function handleSetupEnter(e) { if(e.key === 'Enter') iniciarDebate(); }
+        function handleChatEnter(e) { if(e.key === 'Enter') enviarMensagem(); }
+
+        function encerrarDebate() {
+            if(confirm('Tem certeza? O progresso atual será perdido.')) {
+                location.reload();
+            }
+        }
+
+        async function salvarKey() {
+            const keyInput = document.getElementById('api-key-input');
+            const key = keyInput.value;
+            
+            if (window.location.protocol === 'file:') {
+                alert("ERRO DE CONFIGURAÇÃO:\n\nVocê abriu o arquivo clicando nele!\nO aplicativo precisa rodar via servidor Python.\n\nAbra o terminal, digite 'python app.py' e acesse http://127.0.0.1:5000");
+                return;
+            }
+
+            if(!key) {
+                exibirPopup("Por favor, digite uma chave API válida.", "erro");
+                return;
+            }
+            
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "Salvando...";
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch('/set_api_key', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ api_key: key })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Erro HTTP: ${res.status}`);
+                }
+
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    exibirPopup("Chave API carregada com sucesso!", "sucesso");
+                } else {
+                    exibirPopup(data.message || "Erro ao validar chave.", "erro");
+                }
+            } catch (error) {
+                console.error("Erro detalhado:", error);
+                exibirPopup("Erro de conexão com o servidor. Verifique o terminal.", "erro");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        async function iniciarDebate() {
+            const tema = document.getElementById('tema-input').value;
+            if (!tema) return alert("Por favor, digite um tema!");
+
+            document.getElementById('setup-area').style.display = 'none';
+            document.getElementById('debate-area').style.display = 'block';
+            document.getElementById('hud-area').style.display = 'flex';
+            
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+            
+            addMsg('Sistema', `Pesquisando dados sobre "${tema}"... Gerando tese controversa...`, 'sys');
+
+            const res = await fetch('/iniciar_debate', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ tema: tema })
+            });
+            const data = await res.json();
+            
+            chatBox.innerHTML = '';
+
+            if(data.error) {
+                alert(data.error);
+                location.reload();
+                return;
+            }
+
+            addMsg('IA Antítese', data.mensagem, 'ia');
+            atualizarHUD(data.score, data.feedback);
+        }
+
+        async function enviarMensagem() {
+            const input = document.getElementById('user-input');
+            const texto = input.value;
+            if(!texto) return;
+
+            input.disabled = true;
+            document.getElementById('btn-send').disabled = true;
+
+            addMsg('Você', texto, 'user');
+            input.value = '';
+            
+            const loadingId = addMsg('Juiz', 'Analisando argumentação...', 'sys');
+
+            try {
+                const res = await fetch('/responder', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ mensagem: texto })
+                });
+                const data = await res.json();
+
+                const loadingEl = document.getElementById(loadingId);
+                if(loadingEl) loadingEl.remove();
+
+                if(data.error) {
+                    addMsg('Erro', data.error, 'sys');
+                } else {
+                    addMsg('IA Antítese', data.mensagem, 'ia');
+                    atualizarHUD(data.score, data.feedback);
+                }
+            } catch (e) {
+                addMsg('Erro', 'Falha na conexão.', 'sys');
+            }
+
+            input.disabled = false;
+            document.getElementById('btn-send').disabled = false;
+            input.focus();
+        }
+
+        function addMsg(nome, texto, tipo) {
+            const chat = document.getElementById('chat-box');
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `msg ${tipo}`;
+            
+            const textoFormatado = texto.replace(/\n/g, '<br>');
+            
+            if (tipo === 'sys') {
+                div.innerHTML = `<span style="font-size:16px;">⚖️</span> ${textoFormatado}`;
+            } else {
+                div.innerHTML = textoFormatado;
+            }
+            
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return id;
+        }
+
+        function atualizarHUD(score, feedback) {
+            const bar = document.getElementById('score-bar');
+            bar.style.width = score + '%';
+            
+            document.getElementById('score-val').innerText = score + '/100';
+            document.getElementById('txt-feedback').innerText = feedback;
+            
+            // Cores dinâmicas para a barra
+            // < 40 = IA ganhando (Vermelho)
+            // 40-60 = Empate (Amarelo)
+            // > 60 = Aluno ganhando (Verde)
+            let color1, color2;
+            if(score < 40) {
+                color1 = '#e74c3c'; color2 = '#c0392b';
+            } else if(score > 60) {
+                color1 = '#2ecc71'; color2 = '#27ae60';
+            } else {
+                color1 = '#f1c40f'; color2 = '#f39c12';
+            }
+            bar.style.background = `linear-gradient(90deg, ${color1}, ${color2})`;
+        }
+
+        async function carregarHistorico() {
+            const tbody = document.getElementById('history-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Buscando dados...</td></tr>';
+            
+            try {
+                const res = await fetch('/get_historico');
+                const dados = await res.json();
+                
+                tbody.innerHTML = '';
+                if (dados.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Nenhum debate gravado ainda.</td></tr>';
+                    return;
+                }
+
+                dados.forEach(row => {
+                    const badgeClass = row.vencedor === 'Aluno' ? 'badge-win' : 'badge-loss';
+                    const tr = `<tr>
+                        <td>${row.data}</td>
+                        <td style="font-weight: 500;">${row.tema}</td>
+                        <td>${row.score_final}/100</td>
+                        <td><span class="badge ${badgeClass}">${row.vencedor}</span></td>
+                    </tr>`;
+                    tbody.innerHTML += tr;
+                });
+            } catch(e) {
+                tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
+            }
+        }
+    </script>
+</body>
+</html>
