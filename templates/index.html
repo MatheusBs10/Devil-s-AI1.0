@@ -5,43 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Projeto Antítese</title>
     <style>
-        :root { 
-            --primary: #2c3e50; 
-            --accent: #e74c3c; 
-            --success: #2ecc71; 
-            --bg: #f4f4f9; 
-            --text-scale: 1; /* Variável base para escala de fonte */
-        }
+        /* --- ESTILO VISUAL ORIGINAL --- */
+        :root { --primary: #2c3e50; --accent: #e74c3c; --success: #2ecc71; --bg: #f4f4f9; --text-scale: 1; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; }
         
-        .sidebar { width: 80px; background: var(--primary); display: flex; flex-direction: column; align-items: center; padding-top: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .sidebar { width: 80px; background: var(--primary); display: flex; flex-direction: column; align-items: center; padding-top: 20px; box-shadow: 2px 0 5px rgba(0,0,0,0.1); z-index: 100; }
         .nav-btn { background: none; border: none; color: white; font-size: calc(24px * var(--text-scale)); margin-bottom: 30px; cursor: pointer; opacity: 0.6; transition: 0.3s; position: relative; }
         .nav-btn:hover, .nav-btn.active { opacity: 1; transform: scale(1.1); }
         .nav-btn.active::after { content: ''; position: absolute; right: -22px; top: 50%; transform: translateY(-50%); border-left: 10px solid transparent; border-right: 10px solid var(--bg); border-top: 10px solid transparent; border-bottom: 10px solid transparent; }
 
         .content { flex: 1; padding: 30px; overflow-y: auto; display: none; }
         .content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .hud-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--accent); }
         .score-bar-container { width: 100%; height: 24px; background: #ecf0f1; border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin-top: 5px; }
         .score-bar { height: 100%; background: linear-gradient(90deg, var(--accent) 0%, #f1c40f 50%, var(--success) 100%); width: 50%; transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
-        .score-marker { position: absolute; top: 0; bottom: 0; width: 2px; background: #000; opacity: 0.3; left: 50%; z-index: 2; }
         .feedback-box { font-size: calc(15px * var(--text-scale)); font-weight: 600; color: #555; margin-top: 5px; min-height: 20px; }
+
+        .setup-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; text-align: center; }
+        .setup-input { width: 80%; padding: 15px; font-size: calc(18px * var(--text-scale)); border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; outline: none; text-align: center; }
+        .setup-input:focus { border-color: var(--accent); }
+        .topic-chips { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; margin-top: 15px; }
+        .chip { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: calc(13px * var(--text-scale)); cursor: pointer; transition: 0.2s; color: #555; }
+        .chip:hover { background: #ddd; color: black; }
 
         .chat-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; display: flex; flex-direction: column; height: 60vh; border: 1px solid #e0e0e0; }
         .chat-box { flex: 1; padding: 25px; overflow-y: scroll; display: flex; flex-direction: column; gap: 15px; background: #fafafa; }
-        
         .msg { max-width: 75%; padding: 12px 18px; border-radius: 18px; font-size: calc(15px * var(--text-scale)); line-height: 1.5; position: relative; animation: popIn 0.3s ease-out; }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .msg.ia { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .msg.ia::before { content: '🤖 Antítese'; position: absolute; top: -20px; left: 5px; font-size: calc(11px * var(--text-scale)); color: #999; font-weight: bold; }
-        
+        .msg.model, .msg.ia { background: #fff; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #e0e0e0; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .msg.ia::before, .msg.model::before { content: '🤖 Antítese'; position: absolute; top: -20px; left: 5px; font-size: calc(11px * var(--text-scale)); color: #999; font-weight: bold; }
         .msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(44, 62, 80, 0.2); }
-        
-        .msg.sys { align-self: center; background: #e0e0e0; color: #555; font-size: calc(12px * var(--text-scale)); padding: 5px 15px; border-radius: 20px; margin: 10px 0; font-style: italic; }
+        .msg.sys, .msg.system { align-self: center; background: #e0e0e0; color: #555; font-size: calc(12px * var(--text-scale)); padding: 5px 15px; border-radius: 20px; margin: 10px 0; font-style: italic; }
 
         .input-area { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; gap: 10px; }
         input[type="text"] { flex: 1; padding: 15px; border: 2px solid #eee; border-radius: 8px; font-size: calc(16px * var(--text-scale)); transition: 0.3s; outline: none; }
@@ -50,14 +46,6 @@
         button:hover { background: #34495e; transform: translateY(-2px); }
         button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
 
-        .setup-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; text-align: center; }
-        .setup-input { width: 80%; padding: 15px; font-size: calc(18px * var(--text-scale)); border: 2px solid #ddd; border-radius: 8px; margin: 20px 0; outline: none; text-align: center; }
-        .setup-input:focus { border-color: var(--accent); }
-        
-        .topic-chips { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 25px; }
-        .chip { background: #eee; padding: 8px 15px; border-radius: 20px; font-size: calc(13px * var(--text-scale)); cursor: pointer; transition: 0.2s; color: #555; }
-        .chip:hover { background: #ddd; color: black; }
-
         .history-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .history-table th { background: #f8f9fa; padding: 12px; text-align: left; color: #666; font-weight: 600; border-bottom: 2px solid #eee; font-size: calc(16px * var(--text-scale)); }
         .history-table td { padding: 12px; border-bottom: 1px solid #eee; color: #444; font-size: calc(14px * var(--text-scale)); }
@@ -65,30 +53,63 @@
         .badge { padding: 4px 8px; border-radius: 4px; font-size: calc(11px * var(--text-scale)); font-weight: bold; text-transform: uppercase; }
         .badge-win { background: #d4edda; color: #155724; }
         .badge-loss { background: #f8d7da; color: #721c24; }
+        .toggle-btn { background: #eee; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-size: 13px; margin-left: 5px; color: #555; }
+        .toggle-btn.active { background: var(--primary); color: white; }
+        .btn-small { padding: 5px 10px; font-size: 12px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 4px; }
 
+        /* Config Card */
+        .config-card { background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .config-label { font-weight: bold; color: var(--primary); font-size: calc(16px * var(--text-scale)); display: block; margin-bottom: 10px; }
+        .api-input-group { display: flex; gap: 10px; align-items: stretch; }
+        .api-input-group input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 6px; }
+        .api-input-group button { padding: 0 25px; border: none; background: var(--primary); color: white; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        /* CORREÇÃO DO BOTÃO DE IDIOMA: Contraste melhorado para o inativo */
+        .lang-btn { flex: 1; padding: 10px; cursor: pointer; border: 2px solid #eee; background: white; font-weight: bold; transition: 0.2s; border-radius: 6px; color: #777; }
+        .lang-btn:hover { background: #f9f9f9; border-color: #ddd; color: #333; }
+        .lang-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 5000; }
+        .modal-content { background: white; width: 80%; max-width: 600px; height: 80%; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .replay-box { flex: 1; overflow-y: auto; background: #fafafa; border: 1px solid #eee; padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px; }
+
+        .feedback-popup { position: fixed; bottom: 30px; right: 30px; width: 320px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); padding: 25px; z-index: 2000; display: none; border: 1px solid #e0e0e0; animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .feedback-step { display: none; text-align: center; }
+        .feedback-step.active { display: block; }
+        .star-container { display: flex; justify-content: center; gap: 8px; margin: 15px 0; }
+        .star-btn { font-size: 24px; cursor: pointer; background: none; border: none; color: #ddd; }
+        .star-btn.selected { color: #f1c40f; }
+        .fb-title { font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .fb-desc { font-size: 13px; color: #777; margin-bottom: 15px; }
+        .fb-textarea { width: 90%; padding: 10px; border: 1px solid #ccc; background: #fff; border-radius: 8px; resize: none; margin-bottom: 15px; color: #333; font-family: inherit; }
+        .fb-btn { background: var(--primary); color: white; width: 100%; padding: 10px; border-radius: 8px; margin-top: 10px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <button class="nav-btn active" onclick="showTab('tab-home')" title="Debate">🏠</button>
+        <button class="nav-btn active" onclick="showTab('tab-home')" title="Home">🏠</button>
         <button class="nav-btn" onclick="showTab('tab-history')" title="Histórico">📜</button>
         <button class="nav-btn" onclick="showTab('tab-config')" title="Configurações">⚙️</button>
     </div>
 
+    <!-- HOME -->
     <div id="tab-home" class="content active">
-        <h2 style="color: var(--primary); margin-top: 0; font-size: calc(24px * var(--text-scale));">🔥 Área de Debate</h2>
+        <h2 style="color: var(--primary); margin-top: 0; font-size: calc(24px * var(--text-scale));" data-i18n="arena_title">🔥 Arena de Debate</h2>
         
         <div id="hud-area" class="hud-panel" style="display: none;">
             <div style="flex: 1;">
-                <small style="text-transform: uppercase; letter-spacing: 1px; color: #999; font-size: calc(10px * var(--text-scale));">Análise do Juiz</small>
+                <small style="text-transform: uppercase; letter-spacing: 1px; color: #999; font-size: calc(10px * var(--text-scale));" data-i18n="judge_analysis">Análise do Juiz</small>
                 <div id="txt-feedback" class="feedback-box">Aguardando início...</div>
             </div>
             <div style="text-align: right; width: 40%; padding-left: 20px;">
                 <div style="display: flex; justify-content: space-between; font-size: calc(12px * var(--text-scale)); margin-bottom: 2px; font-weight: bold;">
-                    <span>IA (Mentira)</span>
+                    <span data-i18n="ia_label">IA (Mentira)</span>
                     <span id="score-val">50 pts</span>
-                    <span>VOCÊ (Verdade)</span>
+                    <span data-i18n="user_label">VOCÊ (Verdade)</span>
                 </div>
                 <div class="score-bar-container">
                     <div class="score-marker"></div>
@@ -98,19 +119,15 @@
         </div>
 
         <div id="setup-area" class="setup-card">
-            <h1 style="color: var(--primary); font-size: calc(32px * var(--text-scale));">Desafie a IA</h1>
-            <p style="color: #666; font-size: calc(16px * var(--text-scale));">Escolha qualquer assunto. A IA vai "pesquisar" e criar uma tese falsa para você derrubar.</p>
+            <h1 style="color: var(--primary); font-size: calc(32px * var(--text-scale));" data-i18n="challenge_title">Desafie a IA</h1>
+            <p style="color: #666; font-size: calc(16px * var(--text-scale));" data-i18n="challenge_desc">Escolha qualquer assunto. A IA vai "pesquisar" e criar uma tese falsa para você derrubar.</p>
             
             <input type="text" id="tema-input" class="setup-input" placeholder="Ex: Aquecimento Global, Vacinas, Idade Média..." onkeypress="handleSetupEnter(event)">
             
-            <div class="topic-chips">
-                <div class="chip" onclick="setTema('A Terra é Plana')">🌍 Terra Plana</div>
-                <div class="chip" onclick="setTema('Aquecimento Global é mito')">☀️ Aquecimento Global</div>
-                <div class="chip" onclick="setTema('Vacinas são perigosas')">💉 Vacinas</div>
-                <div class="chip" onclick="setTema('O pouso na Lua foi fake')">🚀 Pouso na Lua</div>
-            </div>
+            <!-- Chips via JS -->
+            <div class="topic-chips" id="topic-chips-container"></div>
 
-            <button onclick="iniciarDebate()" id="btn-start" style="width: 200px; padding: 15px;">INICIAR DEBATE</button>
+            <button onclick="iniciarDebate()" id="btn-start" style="width: 200px; padding: 15px;" data-i18n="start_btn">INICIAR DEBATE</button>
         </div>
 
         <div id="debate-area" style="display: none;">
@@ -118,343 +135,398 @@
                 <div id="chat-box" class="chat-box"></div>
                 <div class="input-area">
                     <input type="text" id="user-input" placeholder="Digite sua refutação..." onkeypress="handleChatEnter(event)">
-                    <button id="btn-send" onclick="enviarMensagem()">Enviar</button>
+                    <button id="btn-send" onclick="enviarMensagem()" data-i18n="send_btn">Enviar</button>
                 </div>
             </div>
             <div style="text-align: center; margin-top: 10px;">
-                <button onclick="encerrarDebate()" style="background: #e74c3c; padding: 10px 20px; font-size: calc(14px * var(--text-scale));">Encerrar / Novo Tema</button>
+                <button onclick="encerrarDebate()" style="background: #e74c3c; padding: 10px 20px; font-size: calc(14px * var(--text-scale));" data-i18n="end_btn">Encerrar Debate</button>
             </div>
         </div>
     </div>
 
+    <!-- HISTÓRICO -->
     <div id="tab-history" class="content">
-        <h2 style="font-size: calc(24px * var(--text-scale));">📜 Histórico de Debates</h2>
+        <h2 style="font-size: calc(24px * var(--text-scale));">
+            <span data-i18n="data_title">📜 Histórico</span> 
+            <!-- BOTÕES: Alterado texto para "Debates" conforme pedido -->
+            <button id="btn-toggle-debates" class="toggle-btn active" onclick="switchHistoryMode('debates')" data-i18n="btn_battles">Debates</button>
+            <button id="btn-toggle-feedbacks" class="toggle-btn" onclick="switchHistoryMode('feedbacks')" data-i18n="btn_reviews">Avaliações</button>
+        </h2>
+        
         <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
             <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-                <button onclick="carregarHistorico()" style="font-size: calc(14px * var(--text-scale)); padding: 8px 15px;">🔄 Atualizar</button>
+                <button onclick="carregarHistorico()" style="font-size: calc(14px * var(--text-scale)); padding: 8px 15px;" data-i18n="refresh_btn">🔄 Atualizar</button>
             </div>
             <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Tema</th>
-                        <th>Pontuação</th>
-                        <th>Resultado</th>
-                    </tr>
+                <thead id="history-header">
+                    <!-- Preenchido via JS -->
                 </thead>
                 <tbody id="history-table-body">
-                    <tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>
+                    <tr><td colspan="4" style="text-align: center;">...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
+    <!-- CONFIGURAÇÕES -->
     <div id="tab-config" class="content">
-        <h2 style="font-size: calc(24px * var(--text-scale));">⚙️ Configurações</h2>
+        <h2 style="font-size: calc(24px * var(--text-scale));" data-i18n="config_title">⚙️ Configurações</h2>
         
-        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; margin-bottom: 20px;">
-            <label style="font-weight: bold; color: var(--primary); font-size: calc(16px * var(--text-scale));">Google Gemini API Key:</label>
-            <p style="font-size: calc(13px * var(--text-scale)); color: #777; margin: 5px 0 15px;">Necessária para ativar o cérebro da IA.</p>
-            
-            <div style="display: flex; gap: 10px;">
-                <input type="password" id="api-key-input" style="flex: 1;" placeholder="Cole sua chave AIzaSy...">
-                <button onclick="salvarKey()">Salvar</button>
+        <div class="config-card">
+            <label class="config-label">Google Gemini API Key:</label>
+            <div class="api-input-group">
+                <input type="password" id="api-key-input" placeholder="Cole sua chave AIzaSy...">
+                <button onclick="salvarKey()" data-i18n="save_btn">Salvar</button>
             </div>
-            
-            <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; font-size: calc(13px * var(--text-scale)); color: #0d47a1;">
-                <strong>Como funciona:</strong><br>
-                1. A IA usa sua chave para gerar respostas.<br>
-                2. A chave é salva apenas na sessão do navegador.<br>
-                3. Obtenha a chave em <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>
-            </div>
+            <p style="font-size: calc(12px * var(--text-scale)); color: #777; margin-top: 10px;" data-i18n="api_help">Necessária para ativar o cérebro da IA. Salva apenas na sessão.</p>
         </div>
 
-        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px;">
-            <label style="font-weight: bold; color: var(--primary); font-size: calc(16px * var(--text-scale));">Acessibilidade:</label>
-            <p style="font-size: calc(13px * var(--text-scale)); color: #777; margin: 5px 0 15px;">Ajuste o tamanho do texto para melhor leitura.</p>
-            
+        <div class="config-card">
+            <label class="config-label" data-i18n="access_title">Acessibilidade:</label>
+            <p style="font-size: calc(13px * var(--text-scale)); color: #777; margin: 5px 0 15px;" data-i18n="access_desc">Ajuste o tamanho do texto para melhor leitura.</p>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <button onclick="mudarFonte(0.85)" style="flex: 1; background: #95a5a6; font-size: 14px;">A-</button>
-                <button onclick="mudarFonte(1)" style="flex: 1; background: var(--primary); font-size: 18px;">A</button>
-                <button onclick="mudarFonte(1.25)" style="flex: 1; background: var(--primary); font-size: 22px;">A+</button>
+                <button onclick="mudarFonte(0.85)" style="flex: 1; background: #95a5a6; border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">A-</button>
+                <button onclick="mudarFonte(1)" style="flex: 1; background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">A</button>
+                <button onclick="mudarFonte(1.25)" style="flex: 1; background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">A+</button>
             </div>
-            <p style="font-size: calc(12px * var(--text-scale)); text-align: center; color: #999;">Tamanho atual: <span id="font-display">Normal</span></p>
+            <p style="font-size: calc(12px * var(--text-scale)); text-align: center; color: #999;">
+                <span data-i18n="size_current_label">Tamanho atual:</span> <span id="font-display">Normal</span>
+            </p>
         </div>
 
+        <div class="config-card">
+            <label class="config-label" data-i18n="lang_title">Idioma / Language:</label>
+            <div style="display: flex; gap: 10px;">
+                <button class="lang-btn active" id="btn-pt" onclick="mudarIdioma('pt')">🇧🇷 Português</button>
+                <button class="lang-btn" id="btn-en" onclick="mudarIdioma('en')">🇺🇸 English</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP FEEDBACK -->
+    <div id="feedback-popup" class="feedback-popup">
+        <div id="step-1" class="feedback-step active">
+            <div class="fb-title" data-i18n="fb_q1_title">O que achou da IA?</div>
+            <div class="fb-desc" data-i18n="fb_q1_desc">Classifique a coerência do debate (1 a 5)</div>
+            <div class="star-container" id="stars-1"><button class="star-btn" onclick="rate(1,1)">★</button><button class="star-btn" onclick="rate(1,2)">★</button><button class="star-btn" onclick="rate(1,3)">★</button><button class="star-btn" onclick="rate(1,4)">★</button><button class="star-btn" onclick="rate(1,5)">★</button></div>
+            <button class="fb-btn" onclick="nextStep(2)" data-i18n="continue_btn">Continuar</button>
+        </div>
+        <div id="step-2" class="feedback-step">
+            <div class="fb-title" data-i18n="fb_q2_title">Elementos Visuais</div>
+            <div class="fb-desc" data-i18n="fb_q2_desc">Os gráficos ajudaram? (1 a 5)</div>
+            <div class="star-container" id="stars-2"><button class="star-btn" onclick="rate(2,1)">★</button><button class="star-btn" onclick="rate(2,2)">★</button><button class="star-btn" onclick="rate(2,3)">★</button><button class="star-btn" onclick="rate(2,4)">★</button><button class="star-btn" onclick="rate(2,5)">★</button></div>
+            <button class="fb-btn" onclick="nextStep(3)" data-i18n="continue_btn">Continuar</button>
+        </div>
+        <div id="step-3" class="feedback-step">
+            <div class="fb-title" data-i18n="fb_q3_title">Sugestões?</div>
+            <div class="fb-desc" data-i18n="fb_q3_desc">O que podemos melhorar no app?</div>
+            <textarea id="fb-text" class="fb-textarea" rows="3" placeholder="..."></textarea>
+            <button class="fb-btn" onclick="enviarAvaliacao()" data-i18n="finish_btn">Enviar e Finalizar</button>
+        </div>
+    </div>
+
+    <!-- MODAL REPLAY -->
+    <div id="replay-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 data-i18n="replay_title">📢 Replay do Debate</h3>
+                <button onclick="fecharReplay()" style="background:none; border:none; font-size:20px; cursor:pointer;">✖</button>
+            </div>
+            <div id="replay-chat-box" class="replay-box"></div>
+        </div>
     </div>
 
     <script>
-        function exibirPopup(mensagem, tipo) {
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                container.style.cssText = "position: fixed; top: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;";
-                document.body.appendChild(container);
+        const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
+        const API_BASE = isLocal ? '' : 'http://127.0.0.1:5000';
+        let currentScore = 50;
+        let currentLang = 'pt';
+
+        // --- TRADUÇÕES ---
+        const translations = {
+            pt: {
+                arena_title: "🔥 Arena de Debate", judge_analysis: "Análise do Juiz", ia_label: "IA (Mentira)", user_label: "VOCÊ (Verdade)",
+                challenge_title: "Desafie a IA", challenge_desc: "Escolha qualquer assunto. A IA vai 'pesquisar' e criar uma tese falsa para você derrubar.",
+                start_btn: "INICIAR DEBATE", send_btn: "Enviar", end_btn: "Encerrar Debate", 
+                // CORREÇÃO: "Histórico"
+                data_title: "📜 Histórico", 
+                btn_battles: "Debates", btn_reviews: "Avaliações", refresh_btn: "🔄 Atualizar", config_title: "⚙️ Configurações",
+                save_btn: "Salvar", api_help: "Necessária para ativar o cérebro da IA. Salva apenas na sessão.",
+                access_title: "Acessibilidade:", access_desc: "Ajuste o tamanho do texto para melhor leitura.", lang_title: "Idioma / Language:",
+                fb_q1_title: "O que achou da IA?", fb_q1_desc: "Classifique a coerência do debate (1 a 5)",
+                fb_q2_title: "Elementos Visuais", fb_q2_desc: "Os gráficos ajudaram? (1 a 5)",
+                fb_q3_title: "Sugestões?", fb_q3_desc: "O que podemos melhorar no app?", continue_btn: "Continuar", finish_btn: "Enviar e Finalizar",
+                replay_title: "📢 Replay do Debate",
+                table_header_debates: "<tr><th>Data</th><th>Tema</th><th>Pontuação</th><th>Resultado</th><th>Ação</th></tr>",
+                table_header_reviews: "<tr><th>Data</th><th>IA (1-5)</th><th>Visual (1-5)</th><th>Sugestão</th></tr>",
+                no_debates: "Ainda não existem debates.", no_reviews: "Ainda não existem avaliações.", error_loading: "Erro ao conectar com o servidor.",
+                size_current_label: "Tamanho atual:", size_small: "Pequeno", size_normal: "Normal", size_large: "Grande",
+                view_btn: "Ver", user_cell: "Usuário", ia_cell: "IA"
+            },
+            en: {
+                arena_title: "🔥 Debate Arena", judge_analysis: "Judge Analysis", ia_label: "AI (Lie)", user_label: "YOU (Truth)",
+                challenge_title: "Challenge the AI", challenge_desc: "Pick a topic. The AI will 'research' and create a false thesis for you to debunk.",
+                start_btn: "START DEBATE", send_btn: "Send", end_btn: "End Debate", 
+                // CORREÇÃO: "History"
+                data_title: "📜 History", 
+                btn_battles: "Debates", btn_reviews: "Reviews", refresh_btn: "🔄 Refresh", config_title: "⚙️ Settings",
+                save_btn: "Save", api_help: "Required to activate the AI brain. Saved in session only.",
+                access_title: "Accessibility:", access_desc: "Adjust text size.", lang_title: "Language / Idioma:",
+                fb_q1_title: "How was the AI?", fb_q1_desc: "Rate debate coherence (1 to 5)",
+                fb_q2_title: "Visual Elements", fb_q2_desc: "Did the charts help? (1 to 5)",
+                fb_q3_title: "Suggestions?", fb_q3_desc: "How can we improve?", continue_btn: "Continue", finish_btn: "Send & Finish",
+                replay_title: "📢 Debate Replay",
+                table_header_debates: "<tr><th>Date</th><th>Topic</th><th>Score</th><th>Result</th><th>Action</th></tr>",
+                table_header_reviews: "<tr><th>Date</th><th>AI (1-5)</th><th>Visual (1-5)</th><th>Suggestion</th></tr>",
+                no_debates: "There are no debates yet.", no_reviews: "There are no reviews yet.", error_loading: "Error connecting to server.",
+                size_current_label: "Current size:", size_small: "Small", size_normal: "Normal", size_large: "Large",
+                view_btn: "View", user_cell: "User", ia_cell: "AI"
             }
+        };
 
-            const isSuccess = tipo === 'sucesso';
-            const corBorda = isSuccess ? 'var(--success)' : 'var(--accent)';
-            const icone = isSuccess ? '✅' : '⚠️';
+        const topics = {
+            pt: [
+                {text:"🌍 Terra Plana", val:"A Terra é Plana"},
+                {text:"☀️ Aquecimento Global", val:"Aquecimento Global é mito"},
+                {text:"💉 Vacinas", val:"Vacinas são perigosas"},
+                {text:"🚀 Pouso na Lua", val:"O pouso na Lua foi fake"}
+            ],
+            en: [
+                {text:"🌍 Flat Earth", val:"The Earth is Flat"},
+                {text:"☀️ Global Warming", val:"Global Warming is a myth"},
+                {text:"💉 Vaccines", val:"Vaccines are dangerous"},
+                {text:"🚀 Moon Landing", val:"The Moon Landing was fake"}
+            ]
+        };
 
-            const toast = document.createElement('div');
-            toast.style.cssText = `
-                background: white; 
-                padding: 15px 20px; 
-                border-radius: 8px; 
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-                border-left: 6px solid ${corBorda}; 
-                font-family: 'Segoe UI', sans-serif;
-                font-size: calc(14px * var(--text-scale));
-                display: flex; 
-                align-items: center; 
-                gap: 12px; 
-                opacity: 0; 
-                transform: translateX(50px); 
-                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-                min-width: 250px;
-            `;
+        function renderTopics(lang) {
+            const container = document.getElementById('topic-chips-container');
+            if(!container) {
+                const setupArea = document.getElementById('setup-area');
+                const btn = document.getElementById('btn-start');
+                const div = document.createElement('div');
+                div.id = 'topic-chips-container';
+                div.className = 'topic-chips';
+                setupArea.insertBefore(div, btn);
+            }
+            document.getElementById('topic-chips-container').innerHTML = topics[lang].map(t => `<div class="chip" onclick="setTema('${t.val}')">${t.text}</div>`).join('');
+        }
+
+        function mudarIdioma(lang) {
+            currentLang = lang;
+            document.getElementById('btn-pt').classList.toggle('active', lang === 'pt');
+            document.getElementById('btn-en').classList.toggle('active', lang === 'en');
             
-            toast.innerHTML = `<span style="font-size: 1.2em;">${icone}</span> <span style="color: #333; font-weight: 600;">${mensagem}</span>`;
-            
-            container.appendChild(toast);
-
-            requestAnimationFrame(() => {
-                toast.style.opacity = '1';
-                toast.style.transform = 'translateX(0)';
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) el.innerHTML = translations[lang][key];
             });
 
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(50px)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
+            const apiKeyInput = document.getElementById('api-key-input');
+            if(apiKeyInput) apiKeyInput.placeholder = lang === 'pt' ? "Cole sua chave AIzaSy..." : "Paste your AIzaSy key...";
+
+            const temaInput = document.getElementById('tema-input');
+            if(temaInput) temaInput.placeholder = lang === 'pt' ? "Ex: Aquecimento Global, Vacinas..." : "Ex: Global Warming, Vaccines...";
+            
+            updateSizeLabel();
+            renderTopics(lang);
+            // CORREÇÃO: Força atualizar a tabela na hora
+            if (document.getElementById('tab-history').classList.contains('active')) {
+                switchHistoryMode(currentHistoryMode);
+            }
         }
 
         function mudarFonte(escala) {
             document.documentElement.style.setProperty('--text-scale', escala);
             localStorage.setItem('antitese_font_scale', escala);
-            
-            let label = "Normal";
-            if(escala < 1) label = "Pequeno";
-            if(escala > 1) label = "Grande";
-            document.getElementById('font-display').innerText = label;
+            updateSizeLabel();
         }
-
+        function updateSizeLabel() {
+            const escala = parseFloat(localStorage.getItem('antitese_font_scale') || 1);
+            let key = "size_normal";
+            if(escala < 1) key = "size_small";
+            if(escala > 1) key = "size_large";
+            document.getElementById('font-display').innerText = translations[currentLang][key];
+        }
         window.onload = function() {
             const savedScale = localStorage.getItem('antitese_font_scale');
-            if (savedScale) {
-                mudarFonte(parseFloat(savedScale));
-            }
+            if (savedScale) mudarFonte(parseFloat(savedScale));
+            renderTopics('pt');
+            switchHistoryMode('debates');
         };
 
         function showTab(tabId) {
             document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            
             const btnIndex = tabId === 'tab-home' ? 0 : tabId === 'tab-history' ? 1 : 2;
             document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
-
-            if(tabId === 'tab-history') carregarHistorico();
+            if(tabId === 'tab-history') switchHistoryMode(currentHistoryMode);
         }
 
-        function setTema(texto) {
-            document.getElementById('tema-input').value = texto;
-        }
-
+        function setTema(texto) { document.getElementById('tema-input').value = texto; }
         function handleSetupEnter(e) { if(e.key === 'Enter') iniciarDebate(); }
         function handleChatEnter(e) { if(e.key === 'Enter') enviarMensagem(); }
 
-        function encerrarDebate() {
-            if(confirm('Tem certeza? O progresso atual será perdido.')) {
-                location.reload();
+        async function enviarMensagem(force = false) {
+            const input = document.getElementById('user-input');
+            const texto = input.value;
+            if(!texto && !force) return;
+            if (!force) {
+                addMsg('Você', texto, 'user');
+                input.value = '';
+                input.disabled = true;
+                document.getElementById('btn-send').disabled = true;
             }
+            const loadingId = addMsg('Juiz', '...', 'sys');
+            try {
+                const res = await fetch(`${API_BASE}/responder`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ mensagem: texto, force_continue: force })
+                });
+                const data = await res.json();
+                document.getElementById(loadingId).remove();
+                if (data.status === 'warning_fuga') {
+                    if (confirm("Você está fugindo do tema! Deseja continuar mesmo assim?")) enviarMensagem(true);
+                    else encerrarDebate();
+                } else if(data.error) {
+                    addMsg('Erro', data.error, 'sys');
+                } else {
+                    addMsg('IA', data.mensagem, 'ia');
+                    currentScore = data.score;
+                    atualizarHUD(data.score, data.feedback);
+                }
+            } catch(e) { document.getElementById(loadingId).innerText = "Erro."; }
+            input.disabled = false; document.getElementById('btn-send').disabled = false; if (!force) input.focus();
         }
 
-        async function salvarKey() {
-            const keyInput = document.getElementById('api-key-input');
-            const key = keyInput.value;
-            
-            if (window.location.protocol === 'file:') {
-                alert("ERRO DE CONFIGURAÇÃO:\n\nVocê abriu o arquivo clicando nele!\nO aplicativo precisa rodar via servidor Python.\n\nAbra o terminal, digite 'python app.py' e acesse http://127.0.0.1:5000");
-                return;
-            }
-
-            if(!key) {
-                exibirPopup("Por favor, digite uma chave API válida.", "erro");
-                return;
-            }
-            
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "Salvando...";
-            btn.disabled = true;
-            
-            try {
-                const res = await fetch('/set_api_key', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ api_key: key })
-                });
-
-                if (!res.ok) {
-                    throw new Error(`Erro HTTP: ${res.status}`);
-                }
-
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    exibirPopup("Chave API carregada com sucesso!", "sucesso");
-                } else {
-                    exibirPopup(data.message || "Erro ao validar chave.", "erro");
-                }
-            } catch (error) {
-                console.error("Erro detalhado:", error);
-                exibirPopup("Erro de conexão com o servidor. Verifique o terminal.", "erro");
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+        async function encerrarDebate() {
+            await fetch(`${API_BASE}/finalizar_manual`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ score: currentScore }) });
+            document.getElementById('feedback-popup').style.display = 'block';
         }
 
         async function iniciarDebate() {
             const tema = document.getElementById('tema-input').value;
-            if (!tema) return alert("Por favor, digite um tema!");
-
+            if(!tema) return alert("Digite um tema");
             document.getElementById('setup-area').style.display = 'none';
             document.getElementById('debate-area').style.display = 'block';
             document.getElementById('hud-area').style.display = 'flex';
-            
-            const chatBox = document.getElementById('chat-box');
-            chatBox.innerHTML = '';
-            
-            addMsg('Sistema', `Pesquisando dados sobre "${tema}"... Gerando tese controversa...`, 'sys');
-
-            const res = await fetch('/iniciar_debate', {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ tema: tema })
-            });
+            document.getElementById('chat-box').innerHTML = '';
+            addMsg('Sistema', '...', 'sys');
+            const res = await fetch(`${API_BASE}/iniciar_debate`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ tema, lang: currentLang }) });
             const data = await res.json();
-            
-            chatBox.innerHTML = '';
-
-            if(data.error) {
-                alert(data.error);
-                location.reload();
-                return;
-            }
-
-            addMsg('IA Antítese', data.mensagem, 'ia');
+            document.getElementById('chat-box').innerHTML = '';
+            if(data.error) { alert(data.error); location.reload(); return; }
+            addMsg('IA', data.mensagem, 'ia');
             atualizarHUD(data.score, data.feedback);
         }
 
-        async function enviarMensagem() {
-            const input = document.getElementById('user-input');
-            const texto = input.value;
-            if(!texto) return;
-
-            input.disabled = true;
-            document.getElementById('btn-send').disabled = true;
-
-            addMsg('Você', texto, 'user');
-            input.value = '';
-            
-            const loadingId = addMsg('Juiz', 'Analisando argumentação...', 'sys');
-
-            try {
-                const res = await fetch('/responder', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ mensagem: texto })
-                });
-                const data = await res.json();
-
-                const loadingEl = document.getElementById(loadingId);
-                if(loadingEl) loadingEl.remove();
-
-                if(data.error) {
-                    addMsg('Erro', data.error, 'sys');
-                } else {
-                    addMsg('IA Antítese', data.mensagem, 'ia');
-                    atualizarHUD(data.score, data.feedback);
-                }
-            } catch (e) {
-                addMsg('Erro', 'Falha na conexão.', 'sys');
-            }
-
-            input.disabled = false;
-            document.getElementById('btn-send').disabled = false;
-            input.focus();
-        }
-
-        function addMsg(nome, texto, tipo) {
-            const chat = document.getElementById('chat-box');
-            const id = 'msg-' + Date.now();
-            const div = document.createElement('div');
-            div.id = id;
-            div.className = `msg ${tipo}`;
-            
-            const textoFormatado = texto.replace(/\n/g, '<br>');
-            
-            if (tipo === 'sys') {
-                div.innerHTML = `<span style="font-size:16px;">⚖️</span> ${textoFormatado}`;
-            } else {
-                div.innerHTML = textoFormatado;
-            }
-            
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-            return id;
-        }
-
-        function atualizarHUD(score, feedback) {
-            const bar = document.getElementById('score-bar');
-            bar.style.width = score + '%';
-            
-            document.getElementById('score-val').innerText = score + '/100';
-            document.getElementById('txt-feedback').innerText = feedback;
-            
-            // Cores dinâmicas para a barra
-            // < 40 = IA ganhando (Vermelho)
-            // 40-60 = Empate (Amarelo)
-            // > 60 = Aluno ganhando (Verde)
-            let color1, color2;
-            if(score < 40) {
-                color1 = '#e74c3c'; color2 = '#c0392b';
-            } else if(score > 60) {
-                color1 = '#2ecc71'; color2 = '#27ae60';
-            } else {
-                color1 = '#f1c40f'; color2 = '#f39c12';
-            }
-            bar.style.background = `linear-gradient(90deg, ${color1}, ${color2})`;
+        let currentHistoryMode = 'debates';
+        function switchHistoryMode(mode) {
+            currentHistoryMode = mode;
+            document.getElementById('btn-toggle-debates').className = mode === 'debates' ? 'toggle-btn active' : 'toggle-btn';
+            document.getElementById('btn-toggle-feedbacks').className = mode === 'feedbacks' ? 'toggle-btn active' : 'toggle-btn';
+            const header = document.getElementById('history-header');
+            if (mode === 'debates') header.innerHTML = translations[currentLang].table_header_debates;
+            else header.innerHTML = translations[currentLang].table_header_reviews;
+            carregarHistorico();
         }
 
         async function carregarHistorico() {
             const tbody = document.getElementById('history-table-body');
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Buscando dados...</td></tr>';
-            
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">...</td></tr>';
+            const endpoint = currentHistoryMode === 'debates' ? '/get_historico' : '/get_avaliacoes';
             try {
-                const res = await fetch('/get_historico');
+                const res = await fetch(`${API_BASE}${endpoint}`);
+                if (!res.ok) throw new Error();
                 const dados = await res.json();
-                
                 tbody.innerHTML = '';
-                if (dados.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Nenhum debate gravado ainda.</td></tr>';
+                if(!dados || dados.length === 0) {
+                    const msgKey = currentHistoryMode === 'debates' ? 'no_debates' : 'no_reviews';
+                    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:20px;color:#777;">${translations[currentLang][msgKey]}</td></tr>`;
                     return;
                 }
-
-                dados.forEach(row => {
-                    const badgeClass = row.vencedor === 'Aluno' ? 'badge-win' : 'badge-loss';
-                    const tr = `<tr>
-                        <td>${row.data}</td>
-                        <td style="font-weight: 500;">${row.tema}</td>
-                        <td>${row.score_final}/100</td>
-                        <td><span class="badge ${badgeClass}">${row.vencedor}</span></td>
-                    </tr>`;
-                    tbody.innerHTML += tr;
+                dados.forEach(d => {
+                    const tr = document.createElement('tr');
+                    if (currentHistoryMode === 'debates') {
+                        // CORREÇÃO: Tradução de "Aluno" para "Usuário"/"User"
+                        let quemVenceu = d.vencedor;
+                        if(quemVenceu === 'Aluno') quemVenceu = translations[currentLang].user_cell;
+                        else if(quemVenceu === 'IA') quemVenceu = translations[currentLang].ia_cell;
+                        
+                        const badgeClass = d.vencedor === 'Aluno' ? 'badge-win' : 'badge-loss';
+                        const viewTxt = translations[currentLang].view_btn;
+                        tr.innerHTML = `<td>${d.data}</td><td style="font-weight: 500;">${d.tema}</td><td>${d.score_final}/100</td><td><span class="badge ${badgeClass}">${quemVenceu}</span></td><td><button class="btn-small" onclick="abrirReplay('${d.id}')">${viewTxt}</button></td>`;
+                    } else {
+                        let sug = d.sugestao;
+                        if(!sug || sug === "null" || sug.trim() === "") sug = "-";
+                        tr.innerHTML = `<td>${d.data}</td><td>⭐${d.nota_debate}</td><td>⭐${d.nota_elementos}</td><td colspan="2" style="font-size:13px; font-style:italic">"${sug}"</td>`;
+                    }
+                    tbody.appendChild(tr);
                 });
-            } catch(e) {
-                tbody.innerHTML = '<tr><td colspan="4">Erro ao carregar.</td></tr>';
-            }
+            } catch(e) { tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">${translations[currentLang].error_loading}</td></tr>`; }
+        }
+
+        async function abrirReplay(id) {
+            try {
+                const res = await fetch(`${API_BASE}/get_detalhes_debate/${id}`);
+                const logs = await res.json();
+                const box = document.getElementById('replay-chat-box');
+                box.innerHTML = '';
+                if(!logs || logs.length === 0) box.innerHTML = '<div style="padding:20px; text-align:center">Nenhum log encontrado.</div>';
+                else {
+                    logs.forEach(l => {
+                        const tipo = l.role === 'model' ? 'ia' : (l.role === 'user' ? 'user' : 'sys');
+                        if(l.role === 'system') return;
+                        const div = document.createElement('div');
+                        div.className = `msg ${tipo}`;
+                        div.innerHTML = l.text; 
+                        box.appendChild(div);
+                    });
+                }
+                document.getElementById('replay-modal').style.display = 'flex';
+            } catch(e) { alert('Erro ao abrir replay'); }
+        }
+        function fecharReplay() { document.getElementById('replay-modal').style.display = 'none'; }
+
+        let feedbackData = { nota_debate: 0, nota_elementos: 0, sugestao: '' };
+        function rate(step, value) {
+            const container = document.getElementById('stars-' + step);
+            const stars = container.getElementsByClassName('star-btn');
+            if (step === 1) feedbackData.nota_debate = value;
+            if (step === 2) feedbackData.nota_elementos = value;
+            for (let i = 0; i < stars.length; i++) { if (i < value) stars[i].classList.add('selected'); else stars[i].classList.remove('selected'); }
+        }
+        function nextStep(step) { document.querySelectorAll('.feedback-step').forEach(el => el.classList.remove('active')); document.getElementById('step-' + step).classList.add('active'); }
+        async function enviarAvaliacao() {
+            feedbackData.sugestao = document.getElementById('fb-text').value;
+            await fetch(`${API_BASE}/salvar_avaliacao`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(feedbackData) });
+            document.getElementById('feedback-popup').style.display = 'none';
+            location.reload();
+        }
+        function addMsg(nome, texto, tipo) {
+            const chat = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = `msg ${tipo}`;
+            const t = texto.replace(/\n/g, '<br>');
+            if(tipo === 'sys') div.innerHTML = `<small>${t}</small>`;
+            else div.innerHTML = `<strong>${nome}:</strong> ${t}`;
+            chat.appendChild(div); chat.scrollTop = chat.scrollHeight;
+            return div.id = 'msg-' + Date.now();
+        }
+        function atualizarHUD(score, feedback) {
+            document.getElementById('score-bar').style.width = score + '%';
+            document.getElementById('score-val').innerText = score + '/100';
+            document.getElementById('txt-feedback').innerText = feedback;
+            let color1, color2;
+            if(score < 40) { color1 = '#e74c3c'; color2 = '#c0392b'; } else if(score > 60) { color1 = '#2ecc71'; color2 = '#27ae60'; } else { color1 = '#f1c40f'; color2 = '#f39c12'; }
+            document.getElementById('score-bar').style.background = `linear-gradient(90deg, ${color1}, ${color2})`;
+        }
+        function exibirPopup(msg, tipo) { alert(msg); }
+        async function salvarKey() {
+            const key = document.getElementById('api-key-input').value;
+            await fetch(`${API_BASE}/set_api_key`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ api_key: key }) });
+            alert('Salvo!');
         }
     </script>
 </body>
